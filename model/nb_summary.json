@@ -1,6 +1,6 @@
 {
   "total_docs": 2427,
-  "vocab_size": 5165,
+  "vocab_size": 5459,
   "classes": [
     "Negatif",
     "Positif"
@@ -17,85 +17,85 @@
     "Negatif": [
       {
         "word": "bencana",
-        "prob": 0.00531009
+        "prob": 0.00525086
       },
       {
         "word": "aja",
-        "prob": 0.00471422
+        "prob": 0.00470547
       },
       {
         "word": "sudah",
-        "prob": 0.00469348
+        "prob": 0.00468289
       },
       {
         "word": "kamu",
-        "prob": 0.00449622
+        "prob": 0.00444117
       },
       {
         "word": "jadi",
-        "prob": 0.00432337
+        "prob": 0.0042746
       },
       {
         "word": "kalau",
-        "prob": 0.00409212
+        "prob": 0.00411724
       },
       {
         "word": "orang",
-        "prob": 0.00367768
+        "prob": 0.00366915
       },
       {
         "word": "dia",
-        "prob": 0.00366193
+        "prob": 0.00361862
       },
       {
         "word": "sama",
-        "prob": 0.00363171
+        "prob": 0.0036174
       },
       {
-        "word": "presiden",
-        "prob": 0.0035885
+        "word": "sumatera",
+        "prob": 0.00354301
       }
     ],
     "Positif": [
       {
         "word": "bencana",
-        "prob": 0.00742463
+        "prob": 0.00734724
       },
       {
         "word": "sumatera",
-        "prob": 0.00642481
+        "prob": 0.0063868
       },
       {
         "word": "pemerintah",
-        "prob": 0.00479874
-      },
-      {
-        "word": "bantuan",
-        "prob": 0.0043832
-      },
-      {
-        "word": "nasional",
-        "prob": 0.00435457
+        "prob": 0.00471662
       },
       {
         "word": "aceh",
-        "prob": 0.00419982
+        "prob": 0.00421713
+      },
+      {
+        "word": "bantuan",
+        "prob": 0.0041164
+      },
+      {
+        "word": "nasional",
+        "prob": 0.00405459
       },
       {
         "word": "jadi",
-        "prob": 0.00403591
+        "prob": 0.00399777
       },
       {
         "word": "sudah",
-        "prob": 0.00377242
+        "prob": 0.00362819
       },
       {
         "word": "bantu",
-        "prob": 0.00357315
+        "prob": 0.00358332
       },
       {
         "word": "bisa",
-        "prob": 0.00356058
+        "prob": 0.00355402
       }
     ]
   }

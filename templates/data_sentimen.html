@@ -21,7 +21,7 @@
     <div class="card-header bg-light fw-semibold">📥 Import Data CSV</div>
     <div class="card-body">
       <p class="text-muted small mb-2">
-        Format CSV: kolom <code>created_at</code>, <code>full_text</code>, <code>label</code> (Positif/Negatif). Separator: <code>;</code>
+        Format CSV: kolom <code>createTimeISO</code>, <code>full_text</code>, <code>label</code> (Positif/Negatif). Separator: <code>;</code>
       </p>
       <form action="{{ url_for('import_sentimen') }}" method="post" enctype="multipart/form-data" class="d-flex gap-2">
         <input type="file" name="file" accept=".csv" class="form-control" required>

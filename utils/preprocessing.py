@@ -1,3 +1,4 @@
+#spasi tidak di atur tadi nilanya tinggi
 # utils/preprocessing.py
 import re
 import string
@@ -7,6 +8,9 @@ from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 # Diperluas berdasarkan analisis komentar data bencana Sumatera
 # PERBAIKAN: Hapus entri 1 huruf ambigu (g, w), hapus self-mapping (kata baku ke dirinya sendiri)
 slang_dict = {
+    # Tambahan kata slang/normalisasi kata
+    # Akurasi	Precision	Recall	F1-Score	Tanggal Analisis
+    # 74.14%	74.97%	     74.14%	  74.49%	 2026-04-17 09:42:55
     # === Kata Ganti & Sapaan ===
     "btw"       : "ngomong-ngomong",
     # "komentar2" : "komentar komentar",
@@ -500,30 +504,15 @@ def lowercase(text: str) -> str:
     return text.lower()
 
 def remove_mention_url(text: str) -> str:
-    # Hapus URL, mention, hashtag → ganti spasi agar kata tidak menyatu
-    text = re.sub(r'http\S+|www\.\S+', ' ', text)
-    text = re.sub(r'@\w+', ' ', text)
-    text = re.sub(r'#\w+', ' ', text)
-
-    # Hapus angka → ganti spasi
-    text = re.sub(r'\d+', ' ', text)
-
-    # Normalkan spasi dulu sebelum cek tanda baca
-    text = re.sub(r'\s+', ' ', text).strip()
-
-    # [OPSI B] Tanda baca yang MENGAPIT dua huruf DAN merupakan bagian kata
-    # Hanya: tanda hubung (-) dan apostrof (') → hapus (delete)
-    # Contoh: "tanggung-jawab" → "tanggungjawab", "it's" → "its"
-    # TIDAK termasuk: titik dua (:), titik (.), koma (,), dll — itu pemisah
-    text = re.sub(r"(?<=[a-zA-Z])[-'](?=[a-zA-Z])", '', text)
-
-    # Semua tanda baca lainnya → ganti spasi (pemisah antar kata)
-    # Contoh: "Superman:sekarang" → "Superman sekarang", "wow!!!" → "wow"
-    text = re.sub(r'[^\w\s]', ' ', text)
-
-    # Bersihkan karakter non-Latin
+    text = re.sub(r'http\S+|www\.\S+', '', text)
+    text = re.sub(r'@\w+', '', text)
+    text = re.sub(r'#\w+', '', text)
+    text = re.sub(r'\d+', '', text)
+    text = text.translate(str.maketrans('', '', string.punctuation))
     text = re.sub(r'[^\x00-\x7F\u00C0-\u024F\u1E00-\u1EFF]', ' ', text)
     text = re.sub(r'\s+', ' ', text).strip()
+    text = re.sub(r'[^\x00-\x7F\u00C0-\u024F\u1E00-\u1EFF]', ' ', text)
+    text = re.sub(r'\s+', ' ', text).strip()                       
     return text
 
 def normalize_slang_text(text: str) -> str:

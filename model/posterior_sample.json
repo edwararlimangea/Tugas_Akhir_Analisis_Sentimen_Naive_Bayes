@@ -1,6 +1,6 @@
 [
   {
-    "text": "izin investasi wajib pintu pemerintah pusat situ bisa jadi indikasi tarik ulur sepakat pejabat pusat...",
+    "text": "izin investasi wajib pintu pemerintah pusatdisitu bisa jadi indikasi tarik ulur sepakat pejabat pusa...",
     "posterior": {
       "Negatif": 1.0,
       "Positif": 0.0
@@ -20,8 +20,8 @@
   {
     "text": "fungsi dewan wakil rakyat timba air laut   ...",
     "posterior": {
-      "Negatif": 1e-06,
-      "Positif": 0.999999
+      "Negatif": 0.000136,
+      "Positif": 0.999864
     },
     "predicted": "Positif",
     "actual": "Negatif"
