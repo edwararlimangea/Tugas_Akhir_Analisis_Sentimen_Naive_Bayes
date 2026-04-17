@@ -1,0 +1,47 @@
+[
+  {
+    "text": "izin investasi wajib pintu pemerintah pusat situ bisa jadi indikasi tarik ulur sepakat pejabat pusat...",
+    "posterior": {
+      "Negatif": 1.0,
+      "Positif": 0.0
+    },
+    "predicted": "Negatif",
+    "actual": "Negatif"
+  },
+  {
+    "text": "kalau masih rantau jawa cari nafkah jawa stop mengkambinghitamkan jawa salah pimpin tdk adil...",
+    "posterior": {
+      "Negatif": 1.0,
+      "Positif": 0.0
+    },
+    "predicted": "Negatif",
+    "actual": "Negatif"
+  },
+  {
+    "text": "fungsi dewan wakil rakyat timba air laut   ...",
+    "posterior": {
+      "Negatif": 1e-06,
+      "Positif": 0.999999
+    },
+    "predicted": "Positif",
+    "actual": "Negatif"
+  },
+  {
+    "text": "karena presiden sekarang muka tembok...",
+    "posterior": {
+      "Negatif": 1.0,
+      "Positif": 0.0
+    },
+    "predicted": "Negatif",
+    "actual": "Negatif"
+  },
+  {
+    "text": "insert komentarkomentar tiktok orang orang paling moral dukungprabs soal bencana sumatera...",
+    "posterior": {
+      "Negatif": 1.0,
+      "Positif": 0.0
+    },
+    "predicted": "Negatif",
+    "actual": "Negatif"
+  }
+]

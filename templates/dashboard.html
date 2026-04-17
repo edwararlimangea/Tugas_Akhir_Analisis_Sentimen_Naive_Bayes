@@ -1,0 +1,355 @@
+{% extends 'base.html' %} {% block content %}
+
+<h2 class="mb-4"><i class="bi bi-speedometer2"></i> Dashboard</h2>
+
+<!-- Kartu Ringkasan -->
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="card text-center shadow-sm border-0 h-100">
+      <div class="card-body">
+        <div class="fs-1 mb-1">📦</div>
+        <h6 class="text-muted">Total Data</h6>
+        <p class="fs-3 fw-bold mb-0">{{ totals.total or 0 }}</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center shadow-sm border-0 h-100">
+      <div class="card-body">
+        <div class="fs-1 mb-1">🎯</div>
+        <h6 class="text-muted">Data Training</h6>
+        <p class="fs-3 fw-bold mb-0">{{ totals.train or 0 }}</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center shadow-sm border-0 h-100">
+      <div class="card-body">
+        <div class="fs-1 mb-1">🧪</div>
+        <h6 class="text-muted">Data Testing</h6>
+        <p class="fs-3 fw-bold mb-0">{{ totals.test or 0 }}</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center shadow-sm border-0 h-100">
+      <div class="card-body">
+        <div class="fs-1 mb-1">📈</div>
+        <h6 class="text-muted">Akurasi Terakhir</h6>
+        <p class="fs-3 fw-bold mb-0">{{ latest_accuracy or '-' }}{% if latest_accuracy %}%{% endif %}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Baris Chart 1: Bar + Pie -->
+<div class="row g-3 mb-4">
+  <div class="col-md-6">
+    <div class="card shadow-sm border-0">
+      <div class="card-body">
+        <h6 class="text-center fw-semibold mb-3">Distribusi Data Training & Testing</h6>
+        <div style="height: 260px">
+          <canvas id="barChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card shadow-sm border-0">
+      <div class="card-body">
+        <h6 class="text-center fw-semibold mb-3">Total Sentimen Positif vs Negatif</h6>
+        <div style="height: 260px">
+          <canvas id="pieChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Baris Chart 2: Trend Perminggu -->
+<div class="row g-3 mb-4">
+  <div class="col-12">
+    <div class="card shadow-sm border-0">
+      <div class="card-body">
+        <h6 class="text-center fw-semibold mb-1">📅 Tren Sentimen Per Minggu</h6>
+        <p class="text-center text-muted small mb-3">Pola perubahan sentimen positif &amp; negatif dari waktu ke waktu</p>
+        {% if weekly_trend and weekly_trend|length > 0 %}
+        <div style="height: 300px">
+          <canvas id="weeklyChart"></canvas>
+        </div>
+        {% else %}
+        <div class="text-center text-muted py-5">
+          <i class="bi bi-bar-chart-line fs-1 d-block mb-2"></i>
+          Belum ada data trend. Import data sentimen yang memiliki kolom tanggal.
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Baris Word Cloud: Positif + Negatif -->
+<div class="row g-3 mb-4">
+  <!-- Word Cloud Positif -->
+  <div class="col-md-6">
+    <div class="card border-0 shadow-sm" style="background:#0f1629; border-radius:14px;">
+      <div class="card-body p-4">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <span class="fw-semibold" style="color:#e2e8f0; font-size:14px; font-family:'Sora',sans-serif;">
+            ☁️ Kata Dominan
+          </span>
+          <span style="background:rgba(22,163,74,0.2); color:#4ade80; font-size:11px;
+                       font-weight:600; padding:4px 12px; border-radius:20px;
+                       border:1px solid rgba(22,163,74,0.3); font-family:'DM Sans',sans-serif;">
+            WordCloud · Positif
+          </span>
+        </div>
+        {% if wordcloud_pos %}
+        <div id="wc-pos" class="wc-container">
+          {% for item in wordcloud_pos %}
+          <span class="wc-word wc-pos"
+                style="font-size:{{ item.size }}px;"
+                title="{{ item.word }}: {{ item.count }}x">
+            {{ item.word }}
+          </span>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-4" style="color:#4a5568;">
+          <i class="bi bi-cloud fs-1 d-block mb-2"></i>
+          <small>Belum ada data preprocessing</small>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Word Cloud Negatif -->
+  <div class="col-md-6">
+    <div class="card border-0 shadow-sm" style="background:#0f1629; border-radius:14px;">
+      <div class="card-body p-4">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <span class="fw-semibold" style="color:#e2e8f0; font-size:14px; font-family:'Sora',sans-serif;">
+            ☁️ Kata Dominan
+          </span>
+          <span style="background:rgba(220,38,38,0.2); color:#f87171; font-size:11px;
+                       font-weight:600; padding:4px 12px; border-radius:20px;
+                       border:1px solid rgba(220,38,38,0.3); font-family:'DM Sans',sans-serif;">
+            WordCloud · Negatif
+          </span>
+        </div>
+        {% if wordcloud_neg %}
+        <div id="wc-neg" class="wc-container">
+          {% for item in wordcloud_neg %}
+          <span class="wc-word wc-neg"
+                style="font-size:{{ item.size }}px;"
+                title="{{ item.word }}: {{ item.count }}x">
+            {{ item.word }}
+          </span>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-4" style="color:#4a5568;">
+          <i class="bi bi-cloud fs-1 d-block mb-2"></i>
+          <small>Belum ada data preprocessing</small>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CSS Word Cloud -->
+<style>
+  .wc-container {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 14px;
+    min-height: 160px;
+    padding: 6px 0;
+  }
+
+  .wc-word {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+    line-height: 1.2;
+    cursor: default;
+    transition: opacity .2s, transform .2s;
+    letter-spacing: .2px;
+  }
+
+  .wc-word:hover {
+    opacity: .75;
+    transform: scale(1.08);
+  }
+
+  /* Positif: gradasi hijau (kata besar lebih terang) */
+  .wc-pos { color: #4ade80; }
+  .wc-pos[style*="font-size:4"],
+  .wc-pos[style*="font-size:3"] { color: #86efac; }
+
+  /* Negatif: gradasi merah (kata besar lebih terang) */
+  .wc-neg { color: #f87171; }
+  .wc-neg[style*="font-size:4"],
+  .wc-neg[style*="font-size:3"] { color: #fca5a5; }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  // ── Data dari Flask ──────────────────────────────────────────────
+  const train_counts     = {{ train_counts | tojson | safe }};
+  const test_counts      = {{ test_counts | tojson | safe }};
+  const sentiment_counts = {{ sentiment_counts | tojson | safe }};
+  const weeklyData       = {{ weekly_trend | tojson | safe }};
+
+  const trainPos = Number(train_counts['Positif'] || 0);
+  const trainNeg = Number(train_counts['Negatif'] || 0);
+  const testPos  = Number(test_counts['Positif']  || 0);
+  const testNeg  = Number(test_counts['Negatif']  || 0);
+  const totalPos = Number(sentiment_counts['Positif'] || 0);
+  const totalNeg = Number(sentiment_counts['Negatif'] || 0);
+
+  // ── Warna ────────────────────────────────────────────────────────
+  const COLOR_POS       = '#5c9e5a';
+  const COLOR_NEG       = '#c0392b';
+  const COLOR_POS_LIGHT = 'rgba(92,158,90,0.18)';
+  const COLOR_NEG_LIGHT = 'rgba(192,57,43,0.18)';
+
+  // ── Bar Chart ────────────────────────────────────────────────────
+  new Chart(document.getElementById('barChart').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: ['Training', 'Testing'],
+      datasets: [
+        { label: 'Positif', data: [trainPos, testPos], backgroundColor: COLOR_POS, borderRadius: 4 },
+        { label: 'Negatif', data: [trainNeg, testNeg], backgroundColor: COLOR_NEG, borderRadius: 4 }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
+      plugins: { legend: { position: 'bottom' } }
+    }
+  });
+
+  // ── Pie Chart ────────────────────────────────────────────────────
+  new Chart(document.getElementById('pieChart').getContext('2d'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Positif', 'Negatif'],
+      datasets: [{
+        data: [totalPos, totalNeg],
+        backgroundColor: [COLOR_POS, COLOR_NEG],
+        hoverOffset: 8
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom' },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => {
+              const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+              const pct   = total > 0 ? ((ctx.parsed / total) * 100).toFixed(1) : 0;
+              return ` ${ctx.label}: ${ctx.parsed} (${pct}%)`;
+            }
+          }
+        }
+      }
+    }
+  });
+
+  // ── Weekly Trend Line Chart ──────────────────────────────────────
+  if (weeklyData && weeklyData.length > 0) {
+    // Filter data yang label-nya valid (tidak mengandung 'None')
+    const filtered = weeklyData.filter(w => w.label && !w.label.includes('None'));
+    const weekLabels = filtered.map(w => w.label);
+    const weekPos    = filtered.map(w => Number(w['Positif'] || 0));
+    const weekNeg    = filtered.map(w => Number(w['Negatif'] || 0));
+
+    if (weekLabels.length > 0) {
+      new Chart(document.getElementById('weeklyChart').getContext('2d'), {
+        type: 'line',
+        data: {
+          labels: weekLabels,
+          datasets: [
+            {
+              label: 'Positif',
+              data: weekPos,
+              borderColor: COLOR_POS,
+              backgroundColor: COLOR_POS_LIGHT,
+              tension: 0.4,
+              fill: true,
+              pointRadius: 5,
+              pointHoverRadius: 7,
+              borderWidth: 2.5
+            },
+            {
+              label: 'Negatif',
+              data: weekNeg,
+              borderColor: COLOR_NEG,
+              backgroundColor: COLOR_NEG_LIGHT,
+              tension: 0.4,
+              fill: true,
+              pointRadius: 5,
+              pointHoverRadius: 7,
+              borderWidth: 2.5
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          scales: {
+            x: {
+              ticks: { maxRotation: 45, minRotation: 30, font: { size: 11 } },
+              grid: { color: 'rgba(0,0,0,0.05)' }
+            },
+            y: {
+              beginAtZero: true,
+              ticks: { stepSize: 1 },
+              grid: { color: 'rgba(0,0,0,0.05)' }
+            }
+          },
+          plugins: {
+            legend: { position: 'bottom' },
+            tooltip: {
+              callbacks: {
+                footer: (items) => {
+                  const total = items.reduce((s, i) => s + i.parsed.y, 0);
+                  return `Total: ${total}`;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+  }
+
+  // ── Word Cloud: variasi warna berdasarkan ukuran ─────────────────
+  document.querySelectorAll('.wc-pos').forEach(el => {
+    const size = parseFloat(el.style.fontSize);
+    if (size >= 40) el.style.color = '#ffffff';
+    else if (size >= 32) el.style.color = '#86efac';
+    else if (size >= 24) el.style.color = '#4ade80';
+    else if (size >= 18) el.style.color = '#22c55e';
+    else el.style.color = '#16a34a';
+  });
+
+  document.querySelectorAll('.wc-neg').forEach(el => {
+    const size = parseFloat(el.style.fontSize);
+    if (size >= 40) el.style.color = '#ffffff';
+    else if (size >= 32) el.style.color = '#fca5a5';
+    else if (size >= 24) el.style.color = '#f87171';
+    else if (size >= 18) el.style.color = '#ef4444';
+    else el.style.color = '#dc2626';
+  });
+</script>
+{% endblock %}

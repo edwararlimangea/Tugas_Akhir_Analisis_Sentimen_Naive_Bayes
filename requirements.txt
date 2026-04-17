@@ -1,0 +1,15 @@
+1. Pembobotan TF-IDF
+TF=1+log⁡(F_(t,d) ),T_(t,d)>0			(2.1)
+IDF=log⁡(D⁄df)				(2.2)
+W=tf×idf					(2.3)
+
+2. Naive Bayes
+P(C∣X)=(P(X∣C)⋅P(C))/(P(X))
+
+3. Evaluasi Klasifikasi
+	Precision.
+Precision=TP/(TP+FP)			( 2.7)
+
+Reccall =TP/(TP+FN)		(2.8)
+
+Accuracy=((TP+TN))/((TP+TN+FP+FN)) 		 (2.9)

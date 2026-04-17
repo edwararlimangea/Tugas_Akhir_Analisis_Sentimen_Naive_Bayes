@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-fluid px-4 mt-4">
+
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold mb-1"><i class="bi bi-journal-text"></i> Data Sentimen</h2>
+      <p class="text-muted small mb-0">Kelola data mentah yang digunakan untuk pelatihan dan pengujian model.</p>
+    </div>
+    <form action="{{ url_for('hapus_data', tabel='data_sentimen') }}" method="POST"
+          onsubmit="return confirm('Yakin hapus semua data sentimen? Aksi ini tidak bisa dibatalkan.')">
+      <button type="submit" class="btn btn-outline-danger">
+        <i class="bi bi-trash3"></i> Hapus Semua
+      </button>
+    </form>
+  </div>
+
+  <!-- Import CSV -->
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-light fw-semibold">📥 Import Data CSV</div>
+    <div class="card-body">
+      <p class="text-muted small mb-2">
+        Format CSV: kolom <code>created_at</code>, <code>full_text</code>, <code>label</code> (Positif/Negatif). Separator: <code>;</code>
+      </p>
+      <form action="{{ url_for('import_sentimen') }}" method="post" enctype="multipart/form-data" class="d-flex gap-2">
+        <input type="file" name="file" accept=".csv" class="form-control" required>
+        <button class="btn btn-success" type="submit">Import</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Data Table -->
+  <div class="card border-0 shadow-sm">
+    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+      <h5 class="mb-0 fw-semibold">📋 Daftar Data</h5>
+      <form method="get" class="d-flex align-items-center gap-2">
+        <label class="text-muted small mb-0">Tampilkan:</label>
+        <select name="limit" class="form-select form-select-sm w-auto" onchange="this.form.submit()">
+          <option value="25"  {% if per_page == 25  %}selected{% endif %}>25</option>
+          <option value="50"  {% if per_page == 50  %}selected{% endif %}>50</option>
+          <option value="100" {% if per_page == 100 %}selected{% endif %}>100</option>
+        </select>
+      </form>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle mb-0">
+          <thead class="table-dark text-center">
+            <tr>
+              <th>ID</th>
+              <th>Waktu</th>
+              <th>Teks</th>
+              <th>Label</th>
+              <th>Dibuat</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for d in data %}
+            <tr>
+              <td class="text-center">{{ d.id }}</td>
+              <td>{{ d.createTimeISO }}</td>
+              <td style="max-width:580px; word-wrap:break-word;">{{ d.text }}</td>
+              <td class="text-center">
+                {% if d.Label == 'Positif' %}
+                  <span class="badge bg-success">Positif</span>
+                {% elif d.Label == 'Negatif' %}
+                  <span class="badge bg-danger">Negatif</span>
+                {% else %}
+                  <span class="badge bg-secondary">{{ d.Label }}</span>
+                {% endif %}
+              </td>
+              <td>{{ d.created_at }}</td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="5" class="text-center text-muted py-4">
+                Belum ada data. Import CSV terlebih dahulu.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div class="d-flex justify-content-end mt-3">
+    <nav>
+      <ul class="pagination mb-0">
+        {% if page > 1 %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page-1 }}&limit={{ per_page }}">« Prev</a>
+        </li>
+        {% endif %}
+
+        {% set start = [page - 2, 1] | max %}
+        {% set end   = [page + 2, total_pages] | min %}
+
+        {% if start > 1 %}
+          <li class="page-item"><a class="page-link" href="?page=1&limit={{ per_page }}">1</a></li>
+          {% if start > 2 %}
+          <li class="page-item disabled"><span class="page-link">…</span></li>
+          {% endif %}
+        {% endif %}
+
+        {% for p in range(start, end + 1) %}
+        <li class="page-item {% if p == page %}active{% endif %}">
+          <a class="page-link" href="?page={{ p }}&limit={{ per_page }}">{{ p }}</a>
+        </li>
+        {% endfor %}
+
+        {% if end < total_pages %}
+          {% if end < total_pages - 1 %}
+          <li class="page-item disabled"><span class="page-link">…</span></li>
+          {% endif %}
+          <li class="page-item"><a class="page-link" href="?page={{ total_pages }}&limit={{ per_page }}">{{ total_pages }}</a></li>
+        {% endif %}
+
+        {% if page < total_pages %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page+1 }}&limit={{ per_page }}">Next »</a>
+        </li>
+        {% endif %}
+      </ul>
+    </nav>
+  </div>
+
+</div>
+{% endblock %}

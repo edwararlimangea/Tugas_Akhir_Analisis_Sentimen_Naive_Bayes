@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Analisis Sentimen — Naive Bayes</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet" />
+  </head>
+  <body>
+
+    <!-- ══ SIDEBAR ══════════════════════════════════ -->
+    <div class="sidebar">
+
+      <!-- Brand -->
+      <div class="sidebar-brand">
+        <div class="brand-icon">📊</div>
+        <h4>Analisis Sentimen</h4>
+        <small>Naive Bayes · TF-IDF</small>
+      </div>
+
+      <!-- Nav -->
+      <div class="sidebar-nav">
+
+        <span class="nav-label">Menu Utama</span>
+
+        <a href="{{ url_for('dashboard') }}"
+           class="{{ 'active' if request.endpoint == 'dashboard' else '' }}">
+          <i class="bi bi-speedometer2"></i> Dashboard
+        </a>
+
+        {% if session.get('role') == 'admin' %}
+        <a href="{{ url_for('data_sentimen') }}"
+           class="{{ 'active' if request.endpoint == 'data_sentimen' else '' }}">
+          <i class="bi bi-journal-text"></i> Data Sentimen
+        </a>
+        {% endif %}
+
+        <span class="nav-label">Proses</span>
+
+        <a href="{{ url_for('preprocessing_page') }}"
+           class="{{ 'active' if request.endpoint == 'preprocessing_page' else '' }}">
+          <i class="bi bi-gear-fill"></i> Preprocessing
+        </a>
+        <a href="{{ url_for('data_training_page') }}"
+           class="{{ 'active' if request.endpoint == 'data_training_page' else '' }}">
+          <i class="bi bi-arrow-repeat"></i> Data Training
+        </a>
+        <a href="{{ url_for('data_testing_page') }}"
+           class="{{ 'active' if request.endpoint == 'data_testing_page' else '' }}">
+          <i class="bi bi-eyedropper"></i> Data Testing
+        </a>
+        <a href="{{ url_for('result_page') }}"
+           class="{{ 'active' if request.endpoint == 'result_page' else '' }}">
+          <i class="bi bi-graph-up"></i> Hasil Analisis
+        </a>
+
+        {% if session.get('role') == 'admin' %}
+        <span class="nav-label">Pengaturan</span>
+        <a href="{{ url_for('users_page') }}"
+           class="{{ 'active' if request.endpoint == 'users_page' else '' }}">
+          <i class="bi bi-people-fill"></i> Kelola User
+        </a>
+        {% endif %}
+
+      </div>
+
+      <!-- Footer / Logout -->
+      <div class="sidebar-footer">
+        <a href="{{ url_for('logout') }}">
+          <i class="bi bi-box-arrow-right"></i>
+          <span>Logout</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- ══ CONTENT ═════════════════════════════════ -->
+    <div class="content">
+      {% block content %}{% endblock %}
+    </div>
+
+    <!-- ══ TOAST ════════════════════════════════════ -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999;">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+          <div class="toast align-items-center text-bg-{{ category }} border-0 show mb-2"
+               role="alert" aria-live="assertive" aria-atomic="true"
+               data-bs-autohide="true" data-bs-delay="4000">
+            <div class="d-flex">
+              <div class="toast-body">{{ message }}</div>
+              <button type="button" class="btn-close btn-close-white me-2 m-auto"
+                      data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+          </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      document.querySelectorAll('.toast').forEach(el => {
+        new bootstrap.Toast(el).show();
+      });
+    </script>
+  </body>
+</html>

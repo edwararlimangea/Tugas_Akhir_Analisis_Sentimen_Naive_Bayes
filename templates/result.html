@@ -1,0 +1,292 @@
+{% extends 'base.html' %} {% block content %}
+<div class="container mt-4">
+  <h2><i class="bi bi-graph-up"></i> Hasil Analisis Model Naive Bayes</h2>
+  <!-- <div class="d-flex justify-content-between align-items-center">
+  <h2><i class="bi bi-graph-up"></i> Hasil Analisis Model Naive Bayes</h2>
+  <form action="{{ url_for('hapus_data', tabel='hasil_analisis') }}" method="POST"
+        onsubmit="return confirm('Yakin hapus semua data hasil analisis?')">
+    <button type="submit" class="btn btn-outline-danger">
+      <i class="bi bi-trash3"></i> Hapus Semua Hasil Analisis
+    </button>
+  </form>
+</div> -->
+  <!-- ═══════════════════════════════════════════════
+       TABEL AKURASI
+  ═══════════════════════════════════════════════ -->
+  {% if hasil_data %}
+  <table class="table table-striped table-bordered mt-3">
+    <thead class="table-dark text-center">
+      <tr>
+        <th>No</th>
+        <th>Model</th>
+        <th>Akurasi</th>
+        <th>Precision</th>
+        <th>Recall</th>
+        <th>F1-Score</th>
+        <th>Tanggal Analisis</th>
+      </tr>
+    </thead>
+    <tbody class="text-center">
+      {% for row in hasil_data %}
+      <tr>
+        <!-- <td>{{ loop.index }}</td> -->
+        <td>{{ row.id }}</td>
+        <td>{{ row.model }}</td>
+        <td>{{ (row.accuracy * 100) | round(2) }}%</td>
+        <td>{{ (row.precisionn* 100) | round(2) }}%</td>
+        <td>{{ (row.recall * 100) | round(2) }}%</td>
+        <td>{{ (row.f1_score * 100) | round(2) }}%</td>
+        <td>{{ row.created_at }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="alert alert-warning mt-3 text-center">Belum ada hasil analisis.</p>
+  {% endif %}
+
+  <hr class="mt-4 mb-4" />
+
+  <!-- ═══════════════════════════════════════════════
+       1. PRIOR PROBABILITY
+  ═══════════════════════════════════════════════ -->
+  {% if nb_summary %}
+  <div class="mt-4">
+    <h5 class="fw-bold mb-1">
+      <i class="bi bi-calculator"></i> 1. Prior Probability — P(C)
+    </h5>
+    <p class="text-muted small mb-2">
+      Probabilitas kemunculan setiap kelas berdasarkan jumlah dokumen training.
+      <br />Rumus: <code>P(C) = jumlah dokumen kelas C / total dokumen</code>
+    </p>
+    <div class="row">
+      {% for cls in nb_summary.classes %}
+      <div class="col-md-3 mb-3">
+        <div class="card border-0 shadow-sm text-center">
+          <div class="card-body">
+            <h6 class="fw-semibold">{{ cls }}</h6>
+            <p
+              class="fs-5 mb-0 fw-bold {% if cls == 'Positif' %}text-success{% else %}text-danger{% endif %}"
+            >
+              {{ nb_summary.prior[cls] }}
+            </p>
+            <small class="text-muted"
+              >{{ nb_summary.class_counts[cls] }} dokumen</small
+            >
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+      <div class="col-md-3 mb-3">
+        <div class="card border-0 shadow-sm text-center bg-light">
+          <div class="card-body">
+            <h6 class="fw-semibold">Total Dokumen</h6>
+            <p class="fs-5 mb-0 fw-bold">{{ nb_summary.total_docs }}</p>
+            <small class="text-muted"
+              >Ukuran Vocab: {{ nb_summary.vocab_size }}</small
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="mt-2 mb-4" />
+
+  <!-- ═══════════════════════════════════════════════
+       2. LIKELIHOOD — Top Kata per Kelas
+  ═══════════════════════════════════════════════ -->
+  <div class="mt-4">
+    <h5 class="fw-bold mb-1">
+      <i class="bi bi-bar-chart"></i> 2. Likelihood — P(kata | C)
+    </h5>
+    <p class="text-muted small mb-3">
+      Probabilitas sebuah kata muncul di kelas tertentu (dengan Laplace
+      smoothing α=1).
+      <br />Rumus:
+      <code>P(w|C) = (count(w,C) + α) / (total kata C + α × |V|)</code>
+      <br />Ditampilkan 10 kata dengan nilai likelihood tertinggi per kelas.
+    </p>
+    <div class="row">
+      {% for cls, words in nb_summary.top_likelihood.items() %}
+      <div class="col-md-6 mb-4">
+        <div class="card border-0 shadow-sm">
+          <div
+            class="card-header {% if cls == 'Positif' %}bg-success text-white{% else %}bg-danger text-white{% endif %}"
+          >
+            <strong>{{ cls }}</strong>
+          </div>
+          <div class="card-body p-0">
+            <table class="table table-sm table-striped mb-0">
+              <thead class="table-dark">
+                <tr>
+                  <th>Rank</th>
+                  <th>Kata</th>
+                  <th>P(kata | {{ cls }})</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for item in words %}
+                <tr>
+                  <td class="text-center">{{ loop.index }}</td>
+                  <td><code>{{ item.word }}</code></td>
+                  <td>{{ item.prob }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <hr class="mt-2 mb-4" />
+  {% endif %}
+
+  <!-- ═══════════════════════════════════════════════
+       3. POSTERIOR PROBABILITY — Contoh Dokumen Uji
+  ═══════════════════════════════════════════════ -->
+  {% if posterior_sample %}
+  <div class="mt-4">
+    <h5 class="fw-bold mb-1">
+      <i class="bi bi-ui-checks"></i> 3. Posterior Probability — P(C | dokumen)
+    </h5>
+    <p class="text-muted small mb-3">
+      Probabilitas akhir setiap kelas untuk tiap dokumen uji.
+      <br />Rumus: <code>P(C|d) ∝ P(C) × ∏ P(w|C)</code> — kelas dengan nilai
+      tertinggi = prediksi. <br />Ditampilkan 5 contoh dokumen dari data
+      testing.
+    </p>
+    <div class="table-responsive">
+      <table class="table table-bordered table-hover align-middle">
+        <thead class="table-dark text-center">
+          <tr>
+            <th>No</th>
+            <th>Teks (preprocessed)</th>
+            {% if posterior_sample %} {% for cls in
+            posterior_sample[0].posterior.keys() %}
+            <th>P({{ cls }} | d)</th>
+            {% endfor %} {% endif %}
+            <th>Label Asli</th>
+            <th>Prediksi</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for doc in posterior_sample %}
+          <tr>
+            <td class="text-center">{{ loop.index }}</td>
+            <td
+              style="
+                max-width: 350px;
+                word-wrap: break-word;
+                font-size: 0.85rem;
+              "
+            >
+              {{ doc.text }}
+            </td>
+            {% for cls, prob in doc.posterior.items() %}
+            <td class="text-center">{{ (prob * 100) | round(2) }}%</td>
+            {% endfor %}
+            <td class="text-center">
+              {% if doc.actual == 'Positif' %}
+              <span class="badge bg-success">{{ doc.actual }}</span>
+              {% else %}
+              <span class="badge bg-danger">{{ doc.actual }}</span>
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if doc.predicted == 'Positif' %}
+              <span class="badge bg-success">{{ doc.predicted }}</span>
+              {% else %}
+              <span class="badge bg-danger">{{ doc.predicted }}</span>
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if doc.actual == doc.predicted %}
+              <span class="badge bg-success">✔ Benar</span>
+              {% else %}
+              <span class="badge bg-warning text-dark">✘ Salah</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <hr class="mt-2 mb-4" />
+  {% endif %}
+
+  <!-- ═══════════════════════════════════════════════
+       CONFUSION MATRIX
+  ═══════════════════════════════════════════════ -->
+  {% if hasil and hasil.confusion_matrix %} {% set cm = hasil.confusion_matrix
+  %}
+  <div class="mt-4">
+    <h5 class="fw-bold mb-3">
+      <i class="bi bi-grid-3x3"></i> Confusion Matrix (Hasil Terbaru)
+    </h5>
+    <table class="table table-bordered text-center" style="max-width: 400px">
+      <thead class="table-dark">
+        <tr>
+          <th>Actual \ Predicted</th>
+          {% for label in cm.labels %}
+          <th>{{ label }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for i in range(cm.matrix | length) %}
+        <tr>
+          <th class="table-dark">{{ cm.labels[i] }}</th>
+          {% for j in range(cm.matrix[i] | length) %}
+          <td>{{ cm.matrix[i][j] }}</td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       DOKUMEN SALAH KLASIFIKASI
+  ═══════════════════════════════════════════════ -->
+  {% if hasil and hasil.misclassified %}
+  <div class="mt-5">
+    <h5 class="fw-bold mb-3">
+      🧾 Dokumen yang Salah Diklasifikasi (10 Pertama)
+    </h5>
+    <div class="table-responsive">
+      <table class="table table-bordered text-center">
+        <thead class="table-dark">
+          <tr>
+            <th>No</th>
+            <th>Teks Preprocessed</th>
+            <th>Label Sebenarnya</th>
+            <th>Prediksi Model</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for doc in hasil.misclassified[:10] %}
+          <tr>
+            <td>{{ loop.index }}</td>
+            <td style="text-align: left">{{ doc.text }}</td>
+            <td class="table-danger">{{ doc.actual }}</td>
+            <td class="table-primary">{{ doc.predicted }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %} {% else %}
+  <p class="alert alert-secondary mt-3 text-center">
+    Confusion matrix belum tersedia.
+  </p>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,102 @@
+{
+  "total_docs": 2427,
+  "vocab_size": 5165,
+  "classes": [
+    "Negatif",
+    "Positif"
+  ],
+  "prior": {
+    "Negatif": 0.718995,
+    "Positif": 0.281005
+  },
+  "class_counts": {
+    "Positif": 682,
+    "Negatif": 1745
+  },
+  "top_likelihood": {
+    "Negatif": [
+      {
+        "word": "bencana",
+        "prob": 0.00531009
+      },
+      {
+        "word": "aja",
+        "prob": 0.00471422
+      },
+      {
+        "word": "sudah",
+        "prob": 0.00469348
+      },
+      {
+        "word": "kamu",
+        "prob": 0.00449622
+      },
+      {
+        "word": "jadi",
+        "prob": 0.00432337
+      },
+      {
+        "word": "kalau",
+        "prob": 0.00409212
+      },
+      {
+        "word": "orang",
+        "prob": 0.00367768
+      },
+      {
+        "word": "dia",
+        "prob": 0.00366193
+      },
+      {
+        "word": "sama",
+        "prob": 0.00363171
+      },
+      {
+        "word": "presiden",
+        "prob": 0.0035885
+      }
+    ],
+    "Positif": [
+      {
+        "word": "bencana",
+        "prob": 0.00742463
+      },
+      {
+        "word": "sumatera",
+        "prob": 0.00642481
+      },
+      {
+        "word": "pemerintah",
+        "prob": 0.00479874
+      },
+      {
+        "word": "bantuan",
+        "prob": 0.0043832
+      },
+      {
+        "word": "nasional",
+        "prob": 0.00435457
+      },
+      {
+        "word": "aceh",
+        "prob": 0.00419982
+      },
+      {
+        "word": "jadi",
+        "prob": 0.00403591
+      },
+      {
+        "word": "sudah",
+        "prob": 0.00377242
+      },
+      {
+        "word": "bantu",
+        "prob": 0.00357315
+      },
+      {
+        "word": "bisa",
+        "prob": 0.00356058
+      }
+    ]
+  }
+}
