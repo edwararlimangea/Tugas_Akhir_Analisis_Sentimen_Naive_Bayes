@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtual env
+venv/
+
+# Upload & dataset
+uploads/
+
+# Model files (WAJIB)
+*.pkl
+model/*.pkl
