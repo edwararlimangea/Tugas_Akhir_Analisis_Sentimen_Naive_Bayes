@@ -1,45 +1,45 @@
 [
   {
-    "text": "izin investasi wajib pintu pemerintah pusatdisitu bisa jadi indikasi tarik ulur sepakat pejabat pusa...",
+    "text": "bencana alam tidak_bisa prediksi tapi kesiapsiagaan respons cepat pemerintah patut apresiasi...",
     "posterior": {
-      "Negatif": 1.0,
-      "Positif": 0.0
+      "Negatif": 0.0,
+      "Positif": 1.0
+    },
+    "predicted": "Positif",
+    "actual": "Positif"
+  },
+  {
+    "text": "edukasi baik...",
+    "posterior": {
+      "Negatif": 0.000468,
+      "Positif": 0.999532
+    },
+    "predicted": "Positif",
+    "actual": "Positif"
+  },
+  {
+    "text": "tidak_bencana banjir longsor sumatera tapi new zealand kapan orang sadar panas global tambah kapan o...",
+    "posterior": {
+      "Negatif": 0.971444,
+      "Positif": 0.028556
     },
     "predicted": "Negatif",
     "actual": "Negatif"
   },
   {
-    "text": "kalau masih rantau jawa cari nafkah jawa stop mengkambinghitamkan jawa salah pimpin tdk adil...",
+    "text": "asal mmberi dukung bebas mau ngapain ...",
     "posterior": {
-      "Negatif": 1.0,
-      "Positif": 0.0
-    },
-    "predicted": "Negatif",
-    "actual": "Negatif"
-  },
-  {
-    "text": "fungsi dewan wakil rakyat timba air laut   ...",
-    "posterior": {
-      "Negatif": 0.000136,
-      "Positif": 0.999864
+      "Negatif": 0.005995,
+      "Positif": 0.994005
     },
     "predicted": "Positif",
     "actual": "Negatif"
   },
   {
-    "text": "karena presiden sekarang muka tembok...",
+    "text": "tidak_mentri tidak_presiden sama saja...",
     "posterior": {
-      "Negatif": 1.0,
-      "Positif": 0.0
-    },
-    "predicted": "Negatif",
-    "actual": "Negatif"
-  },
-  {
-    "text": "insert komentarkomentar tiktok orang orang paling moral dukungprabs soal bencana sumatera...",
-    "posterior": {
-      "Negatif": 1.0,
-      "Positif": 0.0
+      "Negatif": 0.998843,
+      "Positif": 0.001157
     },
     "predicted": "Negatif",
     "actual": "Negatif"

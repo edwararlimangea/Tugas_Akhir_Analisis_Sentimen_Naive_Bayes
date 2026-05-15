@@ -9,12 +9,26 @@ from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 # PERBAIKAN: Hapus entri 1 huruf ambigu (g, w), hapus self-mapping (kata baku ke dirinya sendiri)
 slang_dict = {
     # Tambahan kata slang/normalisasi kata
-    # Akurasi	Precision	Recall	F1-Score	Tanggal Analisis
-    # 74.14%	74.97%	     74.14%	  74.49%	 2026-04-17 09:42:55
+    "tdk"       : "tidak",
+    "rkyt"      : "rakyat",
+    "mmg"       : "memang",
+    "hrganya"   : "harga",
+    "gk"        : "tidak",
+    "jdi"       : "jadi",
+    "indo"      : "indonesia",
+    "g"         : "tidak",
+    "nkri"      : "negara kesatuan republik indonesia",
+    "koar"      : "berteriak",
+    "sumatra"   : "sumatera",
+    "fikiran"   : "pikiran",
+    "kbykan"    : "kebanyakan",
+    "org"       : "orang",
+    "sumpek"    : "stres",
     # === Kata Ganti & Sapaan ===
     "btw"       : "ngomong-ngomong",
     # "komentar2" : "komentar komentar",
-    "supporter " :"dukung",
+    "supporter " :"dukung ",
+    "prabs"     : "prabowo",
     "presden"   : "presiden",
     "gw"        : "saya",
     "ak"        : "saya",
@@ -43,18 +57,24 @@ slang_dict = {
     "itulh"     : "itu",
     "inilh"     : "ini",
     "dn"        : "dan",
+    "n"         : "dan",
+    "ttep"      : "tetap",
+    "pk"        : "pak",
+    # "milih": "dukung",
+    # "memilih": "dukung",
+    # "pilih": "dukung",
 
     # === Ekspresi / Interjeksi ===
     "anj"       : "anjing",
     "anis"      : "anies",
     "disalahinn": "disalahin",
     "cm"        : "cuman",
-    "anjir"     : "wah",
+    "anjir"     : "anjing",
     "anjay"     : "wah",
-    "anjg"      : "wah",
-    "ajg"       : "wah",
-    "anying"    : "wah",
-    "asw"       : "wah",
+    "anjg"      : "anjing",
+    "ajg"       : "anjing",
+    "anying"    : "anjing",
+    "asw"       : "anjing",
     "jiir"      : "wah",
     "jirr"      : "wah",
     "bjir"      : "wah",
@@ -167,7 +187,7 @@ slang_dict = {
     "nyalahin"  : "menyalahkan",
     "disalahin" : "disalahkan",
     "salahin"   : "menyalahkan",
-    "ngijinin"  : "izin",
+    "ngijinin"  : "izinkan",
     "nutup"     : "tutup",
     "viralkan"  : "viral",
 
@@ -268,47 +288,109 @@ slang_dict = {
     "hoaks"     : "hoaks",
     "disinformasi": "disinformasi",
     "misinformasi": "misinformasi",
+
+    # === Tambahan berdasarkan analisis misklasifikasi ===
+    # Slang yang lolos dari filter sebelumnya (ditemukan di data error)
+    "pdhl"        : "padahal",
+    "jg"          : "juga",
+    "juga"        : "juga",
+    "yaudah"      : "sudahlah",
+    "yaudahlah"   : "sudahlah",
+    "ngotot"      : "keras kepala",
+    "ngibul"      : "berbohong",
+    "ngibulnya"   : "berbohongnya",
+    "keitung"     : "terhitung",
+    "waras"       : "waras",
+    "moga"        : "semoga",
+    "semoga"      : "semoga",
+    "kagum"       : "kagum",
+    "timba"       : "timba",
+    "selubung"    : "selubung",
+    "bebas"       : "bebas",
+    "mamah"       : "ibu",
+    "hut"         : "hutan",    # konteks "kayu hut" = kayu hutan
+    "pdhl"        : "padahal",
+    "tebang"      : "tebang",
+    "liar"        : "liar",
 }
 
 # ── Stopwords ─────────────────────────────────────────────────────────────
+# PERBAIKAN: Kata-kata sentimen penting TIDAK dimasukkan ke stopwords
+# supaya konteks emosi dan evaluasi tidak hilang saat preprocessing.
+# Kata yang SENGAJA TIDAK ada di sini (walaupun umum):
+#   - "tidak", "bukan", "tak", "belum" → kata negasi, penting untuk sentimen
+#   - "bagus", "baik", "buruk", "jelek" → kata evaluatif langsung
+#   - "senang", "sedih", "marah", "kecewa" → kata emosi
+#   - "bantu", "peduli", "aman", "selamat" → kata positif konteks bencana
+#   - "lambat", "parah", "gagal", "rusak"  → kata negatif konteks bencana
 stopwords = {
-    # Kata umum (function words)
-    "dan", "yang", "di", "ke", "untuk", "dengan", "atau", "juga",
+    # Kata umum (function words) — aman dihapus, tidak bermakna sentimen
+    "dan", "yang", "di", "ke", "dengan", "atau", "juga",
     "pada", "itu", "ini", "dari", "dalam",
-    "adalah", "akan", "oleh", "ada", "jika", "maka",
+    "adalah", "oleh", "ada", "ko", "ya",
 
-    # Partikel & filler
+    # Partikel & filler — tidak bermakna
     "ya", "oh", "eh", "iya", "ok", "oke",
     "lah", "deh", "sih", "dong", "kok", "kan", "pun",
     "nya", "ter", "nah", "mah", "atuh", "toh", "ih",
-    "ko", "plis", "pliss", "plisss", "plissss",
 
-    # Kata lokasi umum
-    "sini", "sana", "situ", "kemari", "insert"
+    # Kata lokasi umum — tidak bermakna sentimen
+    "sini", "sana", "situ", "kemari",
 
-    # Kata umum netral (aman dihapus)
-    "hal", "cara", "milik", "tempat", "jam",
-
-    # Kata bilangan
-    "satu", "dua", "tiga", "empat", "lima",
-    "enam", "tujuh", "delapan", "sembilan", "sepuluh",
+    # Kata netral umum
+    "hal", "cara", "milik", "tempat",
 
     # Kata penghubung netral
-    "seperti", "antara", "hingga", "sampai",
-    # "setelah", "sebelum", "ketika", "saat", 
-    "serta",
+    "seperti", "hingga", "sampai", "serta",
     "bahwa", "terhadap", "mengenai", "tentang",
-    "atas", "bawah", "para", "pihak",
-    "bersama",
-    # "sama", "lain", "lainnya",
+    "para", "pihak", "bersama",
     "tersebut",
 
-    # Sapaan / gelar
+    # Sapaan
     "bapak", "pak", "ibu", "bu", "mas", "mbak", "kak",
-    "bang", "abang", "adik", "kakak", "tuan", "nyonya",
+    "bang", "abang", "adik", "kakak",
 
-    # Tambahan khas sosial media
-    "rt", "retweet", "via", "amp"
+    # Sosial media
+    "rt", "retweet", "via", "amp", "d",
+
+    # Kata frekuensi tinggi tapi tidak bermakna sentimen
+    # CATATAN: "juga" dan "sudah" TIDAK dimasukkan karena kadang
+    # bermakna kontekstual. Hanya intensifier murni yang aman dihapus.
+    "akan", "agar", "supaya",
+    "lebih", "sekali", "paling",
+    # "sangat" juga dikeluarkan dari sini — bisa memperkuat sentimen
+    # contoh: "sangat kecewa", "sangat bagus"
+}
+
+# ── Kata Sentimen yang Wajib Dipertahankan (whitelist) ────────────────────
+# Kata-kata ini TIDAK boleh dihapus meskipun muncul sebagai stopwords.
+# Digunakan di fungsi remove_stopwords() untuk proteksi ekstra.
+SENTIMENT_WHITELIST = {
+    # Sentimen positif
+    "bagus", "baik", "benar", "bersih", "berhasil", "cepat",
+    "sigap", "tanggap", "peduli", "aman", "selamat", "setuju",
+    "bangga", "senang", "puas", "mantap", "luar biasa", "hebat",
+    "tepat", "adil", "merata", "terbuka", "transparan",
+    "solidaritas", "empati", "simpati", "bantu",
+    # Sentimen negatif
+    "buruk", "jelek", "lambat", "gagal", "rusak", "parah",
+    "kecewa", "marah", "kesal", "sedih", "menderita", "sengsara",
+    "terlambat", "terabaikan", "diabaikan", "korupsi", "pungli",
+    "zalim", "aniaya", "diskriminasi", "prihatin",
+    "tidak_bagus", "tidak_baik", "tidak_cepat", "tidak_peduli",
+    "tidak_ada", "tidak_serius", "tidak_adil", "tidak_mampu",
+    "tidak_tanggap", "tidak_sigap", "tidak_berhasil",
+    "tidak_merata", "tidak_cukup", "tidak_punya",
+    # Kata evaluatif netral yang kontekstual
+    "kritis", "gawat", "darurat", "mendesak", "serius",
+    "hancur", "tenggelam", "tewas", "korban", "luka",
+    # Tambahan dari analisis misklasifikasi
+    "kagum", "waras", "bebas", "liar", "ngotot",
+    "ngibul", "ngibulnya", "sarkasme", "sindir",
+    "keras kepala", "berbohong", "berbohongnya",
+    "tebang", "selubung", "moga", "semoga",
+    "tidak_mau", "tidak_pakai", "tidak_ya", "tidak_memahami",
+    "tidak_punya",
 }
 
 # Inisialisasi stemmer Sastrawi
@@ -320,6 +402,7 @@ stemmer = factory.create_stemmer()
 # PERBAIKAN: Ditambah banyak kata domain bencana agar tidak salah stem
 custom_stem = {
     # === Domain Bencana (kata inti — lindungi dari stemmer) ===
+    "pemimpin"      : "pemimpin",
     "bencana"       : "bencana",
     "banjir"        : "banjir",
     "longsor"       : "longsor",
@@ -470,6 +553,15 @@ custom_stem = {
     "warganet"      : "warganet",
     "netizen"       : "warganet",      # normalisasi
 
+    # === Negasi gabungan dari kasus error ===
+    "tidak_mau"       : "tidak_mau",
+    "tidak_pakai"     : "tidak_pakai",
+    "tidak_ya"        : "tidak_ya",
+    "tidak_memahami"  : "tidak_memahami",
+    "tidak_punya"     : "tidak_punya",
+    "tidak_waras"     : "tidak_waras",
+    "tidak_bebas"     : "tidak_bebas",
+
     # === Custom negasi gabungan ===
     "tidak_bagus"   : "tidak_bagus",
     "tidak_baik"    : "tidak_baik",
@@ -508,11 +600,14 @@ def remove_mention_url(text: str) -> str:
     text = re.sub(r'@\w+', '', text)
     text = re.sub(r'#\w+', '', text)
     text = re.sub(r'\d+', '', text)
-    text = text.translate(str.maketrans('', '', string.punctuation))
-    text = re.sub(r'[^\x00-\x7F\u00C0-\u024F\u1E00-\u1EFF]', ' ', text)
+    
+    # PERBAIKAN: Ganti tanda baca dengan spasi, bukan dihapus
+    punct = string.punctuation.replace('_', '')
+    text = re.sub(r'[' + re.escape(punct) + r']+', ' ', text)
+    
+    # Hapus karakter non-alfabetik/latin (pertahankan spasi)
+    text = re.sub(r'[^\x00-\x7F\u00C0-\u024F\u1E00-\u1EFF\s]', ' ', text)
     text = re.sub(r'\s+', ' ', text).strip()
-    text = re.sub(r'[^\x00-\x7F\u00C0-\u024F\u1E00-\u1EFF]', ' ', text)
-    text = re.sub(r'\s+', ' ', text).strip()                       
     return text
 
 def normalize_slang_text(text: str) -> str:
@@ -528,37 +623,65 @@ def normalize_slang_text(text: str) -> str:
 
 def negation_handling_text(text: str) -> str:
     """
-    PERBAIKAN:
-    1. Gunakan hanya bentuk baku (slang sudah dinormalisasi sebelumnya)
-    2. Gabungkan hingga 2 kata setelah negasi agar menangkap frasa lebih kaya
-       Contoh: "tidak ada bantuan" → "tidak_ada bantuan" (kata ke-1 digabung)
-               "tidak segera ditangani" → "tidak_segera ditangani"
+    Gabungkan kata negasi dengan kata berikutnya menjadi token tunggal.
+    Contoh: "tidak ada" → "tidak_ada", "bukan benar" → "tidak_benar"
+    
+    PERBAIKAN v2:
+    - Skip partikel filler (ya, sih, kok, lah, dong) setelah negasi
+      supaya "tidak ya bisa" → "tidak_bisa" bukan "tidak_ya"
+    - Normalisasi semua negasi ke prefix "tidak_" agar konsisten di TF-IDF
     """
-    # PERBAIKAN: Hanya bentuk baku — slang sudah dikonversi di tahap sebelumnya
     negation_words = {
         "tidak", "bukan", "tak", "jangan", "belum", "tanpa", "tiada", "nihil",
     }
+    # Partikel filler yang bisa muncul di antara negasi dan kata isinya
+    filler_particles = {"ya", "sih", "kok", "lah", "dong", "deh", "pun", "kah"}
+    
     tokens = text.split()
     result = []
-    skip_next = False
-    for i, token in enumerate(tokens):
-        if skip_next:
-            skip_next = False
-            continue
-        next_token = tokens[i + 1] if i + 1 < len(tokens) else None
-        if token in negation_words and next_token and next_token not in negation_words:
-            result.append("tidak_" + next_token)
-            skip_next = True
+    i = 0
+    while i < len(tokens):
+        token = tokens[i]
+        if token in negation_words:
+            # Cari kata isi berikutnya — lewati filler particle
+            j = i + 1
+            while j < len(tokens) and tokens[j] in filler_particles:
+                j += 1
+            
+            if j < len(tokens) and tokens[j] not in negation_words:
+                # Gabungkan negasi + kata isi
+                result.append("tidak_" + tokens[j])
+                # Lewati semua token yang sudah dikonsumsi (filler + kata isi)
+                i = j + 1
+                continue
+            else:
+                # Tidak ada kata isi valid — simpan negasi apa adanya
+                result.append(token)
         else:
             result.append(token)
+        i += 1
     return ' '.join(result)
 
 def tokenize(text: str) -> list:
     return text.split()
 
 def remove_stopwords(tokens: list) -> list:
-    # Pertahankan token yang mengandung '_' (negasi gabungan seperti tidak_peduli)
-    return [word for word in tokens if word not in stopwords or '_' in word]
+    """
+    Hapus stopwords dengan dua pengecualian:
+    1. Token yang mengandung '_' (negasi gabungan: tidak_peduli, tidak_mampu, dll.)
+    2. Token yang ada di SENTIMENT_WHITELIST (kata sentimen penting)
+    """
+    result = []
+    for word in tokens:
+        if '_' in word:
+            result.append(word)
+        elif word in SENTIMENT_WHITELIST:
+            result.append(word)
+        elif word in stopwords:
+            continue
+        else:
+            result.append(word)
+    return result
 
 def safe_stem(word: str) -> str:
     if word in custom_stem:

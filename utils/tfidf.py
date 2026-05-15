@@ -25,7 +25,8 @@ def compute_tf(docs):
         # Terapkan rumus TF = 1 + log(freq)
         for w, f in freq.items():
             if f > 0:
-                tf[w] = 1 + math.log(f)
+                # tf[w] = 1 + math.log(f)
+                tf[w] = 1 + math.log10(f)
         tf_list.append(tf)
     return tf_list
 
@@ -49,7 +50,8 @@ def compute_idf(docs):
     idf = {}
     for w, freq in df.items():
         # D / freq > 0 karena freq minimal 1
-        idf[w] = math.log(D / freq)
+        idf[w] = math.log10(D / freq)
+        # idf[w] = math.log(D / freq)
     return idf
 
 

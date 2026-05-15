@@ -18,6 +18,11 @@ from sklearn.metrics import (
     accuracy_score, precision_score,
     recall_score, f1_score, confusion_matrix
 )
+try:
+    from imblearn.over_sampling import SMOTE
+    SMOTE_AVAILABLE = True
+except ImportError:
+    SMOTE_AVAILABLE = False
 
 
 app = Flask(__name__)
@@ -406,7 +411,88 @@ def download_preprocessing():
         headers={'Content-Disposition': 'attachment; filename=hasil_preprocessing.csv'}
     )
 
-    
+
+# ── Download TF, IDF, TF-IDF ───────────────────────────────────────────
+@app.route('/download_tfidf')
+@login_required
+def download_tfidf():
+    import io, csv
+    from flask import Response
+    from utils.tfidf import compute_tf, compute_idf, compute_tfidf
+
+    # Cek apakah IDF sudah tersedia (model sudah pernah di-training)
+    idf_path = os.path.join(MODEL_DIR, 'idf.pkl')
+    if not os.path.exists(idf_path):
+        flash("⚠️ IDF belum tersedia. Jalankan Training terlebih dahulu.", "warning")
+        return redirect(request.referrer or url_for('dashboard'))
+
+    idf = joblib.load(idf_path)
+
+    conn   = get_db_conn()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT ds.createTimeISO,
+               ds.text,
+               ds.Label,
+               dp.text_preprocessed AS preprocessed
+        FROM data_preprocessing dp
+        JOIN data_sentimen ds ON dp.sentimen_id = ds.id
+        ORDER BY dp.sentimen_id ASC
+    """)
+    rows = cursor.fetchall()
+    cursor.close()
+    conn.close()
+
+    if not rows:
+        flash("⚠️ Belum ada data preprocessing. Jalankan Preprocessing terlebih dahulu.", "warning")
+        return redirect(request.referrer or url_for('dashboard'))
+
+    # Tokenisasi semua dokumen
+    all_tokens = [r['preprocessed'].split() for r in rows]
+
+    # Hitung TF untuk seluruh data
+    tf_list    = compute_tf(all_tokens)
+
+    # Hitung TF-IDF menggunakan IDF dari training
+    tfidf_list = compute_tfidf(tf_list, idf)
+
+    # Kumpulkan semua vocab (dari IDF training, urut alfabet)
+    vocab_sorted = sorted(idf.keys())
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    # ── Header ────────────────────────────────────────────────────────
+    # Kolom info + kolom TF per kata + kolom IDF per kata + kolom TF-IDF per kata
+    header_info  = ['createTimeISO', 'text', 'Label', 'preprocessed']
+    header_tf    = [f'TF_{w}'    for w in vocab_sorted]
+    header_idf   = [f'IDF_{w}'   for w in vocab_sorted]
+    header_tfidf = [f'TFIDF_{w}' for w in vocab_sorted]
+    writer.writerow(header_info + header_tf + header_idf + header_tfidf)
+
+    # ── Baris data ────────────────────────────────────────────────────
+    for row, tf_doc, tfidf_doc in zip(rows, tf_list, tfidf_list):
+        info_cols = [
+            row['createTimeISO'] or '',
+            row['text'],
+            row['Label'],
+            row['preprocessed'],
+        ]
+
+        tf_cols    = [round(tf_doc.get(w, 0.0), 8)    for w in vocab_sorted]
+        idf_cols   = [round(idf.get(w, 0.0), 8)        for w in vocab_sorted]
+        tfidf_cols = [round(tfidf_doc.get(w, 0.0), 8) for w in vocab_sorted]
+
+        writer.writerow(info_cols + tf_cols + idf_cols + tfidf_cols)
+
+    output.seek(0)
+    return Response(
+        '\ufeff' + output.getvalue(),
+        mimetype='text/csv',
+        headers={'Content-Disposition': 'attachment; filename=hasil_tfidf.csv'}
+    )
+
+
 # ── Data Training Page ─────────────────────────────────────────────────
 @app.route('/data_training')
 @login_required
@@ -486,8 +572,70 @@ def training_proses():
         joblib.dump(idf,   os.path.join(MODEL_DIR, 'idf.pkl'))
         joblib.dump(vocab, os.path.join(MODEL_DIR, 'vocab.pkl'))
 
+        # ── SMOTE Oversampling ────────────────────────────────────────────
+        # Ubah TF-IDF dict menjadi matrix numerik agar bisa di-SMOTE
+        smote_applied    = False
+        y_train_labels   = train_df['Label'].tolist()
+        tfidf_train_final = tfidf_train
+
+        if SMOTE_AVAILABLE:
+            try:
+                # Kumpulkan semua vocab dari training
+                all_words = sorted(vocab)
+                word2idx  = {w: i for i, w in enumerate(all_words)}
+                n_features = len(all_words)
+
+                # Buat matrix (n_samples x n_features)
+                import numpy as np
+                X_mat = np.zeros((len(tfidf_train), n_features), dtype=np.float32)
+                for i, doc in enumerate(tfidf_train):
+                    for w, v in doc.items():
+                        if w in word2idx:
+                            X_mat[i, word2idx[w]] = v
+
+                # Encode label ke integer
+                label_list   = sorted(set(y_train_labels))  # ['Negatif', 'Positif']
+                label2int    = {l: i for i, l in enumerate(label_list)}
+                int2label    = {i: l for l, i in label2int.items()}
+                y_int        = np.array([label2int[l] for l in y_train_labels])
+
+                # Hitung k_neighbors yang aman (min kelas - 1, max 5)
+                from collections import Counter
+                class_counts = Counter(y_train_labels)
+                min_class_count = min(class_counts.values())
+                k_neighbors = min(5, min_class_count - 1)
+
+                if k_neighbors >= 1:
+                    sm = SMOTE(random_state=42, k_neighbors=k_neighbors)
+                    X_resampled, y_resampled = sm.fit_resample(X_mat, y_int)
+
+                    # Konversi balik ke list of dict TF-IDF
+                    tfidf_train_final = []
+                    for row in X_resampled:
+                        doc = {all_words[j]: float(row[j])
+                               for j in range(n_features) if row[j] > 0}
+                        tfidf_train_final.append(doc)
+
+                    y_train_labels  = [int2label[i] for i in y_resampled]
+                    smote_applied   = True
+
+                    # Simpan info balancing untuk response
+                    before_counts = dict(class_counts)
+                    after_counts  = dict(Counter(y_train_labels))
+                else:
+                    before_counts = dict(Counter(y_train_labels))
+                    after_counts  = before_counts
+
+            except Exception as e_smote:
+                print(f'[SMOTE] Gagal: {e_smote}, lanjut tanpa SMOTE.')
+                before_counts = dict(Counter(y_train_labels))
+                after_counts  = before_counts
+        else:
+            before_counts = dict(Counter(y_train_labels))
+            after_counts  = before_counts
+
         nb_model = ManualNaiveBayes(alpha=1.0)
-        nb_model.fit(tfidf_train, train_df['Label'].tolist())
+        nb_model.fit(tfidf_train_final, y_train_labels)
 
         joblib.dump(nb_model, os.path.join(MODEL_DIR, 'naive_bayes_model.pkl'))
 
@@ -511,12 +659,20 @@ def training_proses():
         cur.close()
         conn.close()
 
+        smote_msg = (
+            f' (SMOTE: {before_counts} → {after_counts})' 
+            if smote_applied else ' (SMOTE tidak tersedia, install imbalanced-learn)'
+        )
         return jsonify({
-            'status'      : 'success',
-            'message'     : 'Model Naive Bayes berhasil di-training!',
-            'total_train' : len(train_df),
-            'total_test'  : len(test_df),
-            'vocab_size'  : len(vocab)
+            'status'         : 'success',
+            'message'        : 'Model Naive Bayes berhasil di-training!' + smote_msg,
+            'total_train'    : len(tfidf_train_final),
+            'total_train_ori': len(train_df),
+            'total_test'     : len(test_df),
+            'vocab_size'     : len(vocab),
+            'smote_applied'  : smote_applied,
+            'before_counts'  : before_counts,
+            'after_counts'   : after_counts,
         })
 
     except Exception as e:
@@ -776,7 +932,8 @@ def login():
             session['user_id'] = user['id']
             session['nama']    = user['username']
             session['role']    = user['role']
-            return render_template('login.html', success_name=user['username'])
+            flash(f"Selamat datang, {user['username']}!", "success")
+            return redirect(url_for('dashboard'))
         else:
             flash('Email atau password salah!', 'danger')
     return render_template('login.html')
@@ -787,25 +944,42 @@ def register():
     if 'user_id' in session:
         return redirect(url_for('dashboard'))
     if request.method == 'POST':
-        username = request.form['nama']
-        email    = request.form['email']
-        password = request.form['password']
-        db       = get_db_conn()
-        cursor   = db.cursor(dictionary=True, buffered=True)
+        username        = request.form.get('username', '').strip()
+        email           = request.form.get('email', '').strip()
+        password        = request.form.get('password', '').strip()
+        confirm_password = request.form.get('confirm_password', '').strip()
+        role            = request.form.get('role', 'user').strip()
+
+        # Validasi konfirmasi password
+        if password != confirm_password:
+            flash('Password dan konfirmasi password tidak cocok.', 'danger')
+            return render_template('register.html')
+
+        if not username or not email or not password:
+            flash('Semua field harus diisi.', 'danger')
+            return render_template('register.html')
+
+        db = get_db_conn()
+        cursor = db.cursor(dictionary=True, buffered=True)
         cursor.execute("SELECT * FROM users WHERE email=%s OR username=%s", (email, username))
         if cursor.fetchone():
             cursor.close()
             db.close()
-            return render_template('register.html', error_duplicate=True)
+            flash('Email atau nama pengguna sudah terdaftar.', 'danger')
+            return render_template('register.html')
+
+        hashed = generate_password_hash(password)
         cursor.execute(
-            "INSERT INTO users (username,email,password,role) VALUES (%s,%s,%s,%s)",
-            (username, email, generate_password_hash(password), 'user'))
+            "INSERT INTO users (username, email, password, role) VALUES (%s, %s, %s, %s)",
+            (username, email, hashed, role)
+        )
         db.commit()
         cursor.close()
         db.close()
-        return render_template('register.html', success_register=True)
-    return render_template('register.html')
+        flash('Akun berhasil dibuat. Silakan login.', 'success')
+        return redirect(url_for('login'))
 
+    return render_template('register.html')
 
 @app.route('/logout')
 @login_required

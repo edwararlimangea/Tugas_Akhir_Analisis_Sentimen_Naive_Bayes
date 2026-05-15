@@ -1,101 +1,101 @@
 {
-  "total_docs": 2427,
-  "vocab_size": 5459,
+  "total_docs": 4690,
+  "vocab_size": 5844,
   "classes": [
     "Negatif",
     "Positif"
   ],
   "prior": {
-    "Negatif": 0.718995,
-    "Positif": 0.281005
+    "Negatif": 0.5,
+    "Positif": 0.5
   },
   "class_counts": {
-    "Positif": 682,
-    "Negatif": 1745
+    "Positif": 2345,
+    "Negatif": 2345
   },
   "top_likelihood": {
     "Negatif": [
       {
-        "word": "bencana",
-        "prob": 0.00525086
-      },
-      {
-        "word": "aja",
-        "prob": 0.00470547
-      },
-      {
         "word": "sudah",
-        "prob": 0.00468289
+        "prob": 0.00460353
       },
       {
-        "word": "kamu",
-        "prob": 0.00444117
+        "word": "bencana",
+        "prob": 0.00459663
       },
       {
         "word": "jadi",
-        "prob": 0.0042746
+        "prob": 0.00427516
       },
       {
-        "word": "kalau",
-        "prob": 0.00411724
+        "word": "aja",
+        "prob": 0.00426205
       },
       {
         "word": "orang",
-        "prob": 0.00366915
-      },
-      {
-        "word": "dia",
-        "prob": 0.00361862
-      },
-      {
-        "word": "sama",
-        "prob": 0.0036174
+        "prob": 0.0039916
       },
       {
         "word": "sumatera",
-        "prob": 0.00354301
+        "prob": 0.0039749
+      },
+      {
+        "word": "kalau",
+        "prob": 0.00392775
+      },
+      {
+        "word": "kamu",
+        "prob": 0.00372764
+      },
+      {
+        "word": "pemerintah",
+        "prob": 0.00360786
+      },
+      {
+        "word": "sama",
+        "prob": 0.00355733
       }
     ],
     "Positif": [
       {
-        "word": "bencana",
-        "prob": 0.00734724
-      },
-      {
         "word": "sumatera",
-        "prob": 0.0063868
+        "prob": 0.00970897
       },
       {
-        "word": "pemerintah",
-        "prob": 0.00471662
+        "word": "moga",
+        "prob": 0.0081977
       },
       {
-        "word": "aceh",
-        "prob": 0.00421713
+        "word": "bencana",
+        "prob": 0.00735155
       },
       {
-        "word": "bantuan",
-        "prob": 0.0041164
-      },
-      {
-        "word": "nasional",
-        "prob": 0.00405459
+        "word": "baik",
+        "prob": 0.00708396
       },
       {
         "word": "jadi",
-        "prob": 0.00399777
+        "prob": 0.00571903
       },
       {
-        "word": "sudah",
-        "prob": 0.00362819
+        "word": "untuk",
+        "prob": 0.00546675
       },
       {
-        "word": "bantu",
-        "prob": 0.00358332
+        "word": "aceh",
+        "prob": 0.00534862
       },
       {
-        "word": "bisa",
-        "prob": 0.00355402
+        "word": "presiden",
+        "prob": 0.00506722
+      },
+      {
+        "word": "pemerintah",
+        "prob": 0.00497388
+      },
+      {
+        "word": "dukung",
+        "prob": 0.00470296
       }
     ]
   }
