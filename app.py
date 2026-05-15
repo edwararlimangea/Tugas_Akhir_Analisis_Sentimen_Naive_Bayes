@@ -33,7 +33,7 @@ DB_CONFIG = {
     'user'    : os.environ.get('MYSQLUSER',     os.environ.get('DB_USER',     'root')),
     'password': os.environ.get('MYSQLPASSWORD', os.environ.get('DB_PASS',     '')),
     'database': os.environ.get('MYSQLDATABASE', os.environ.get('DB_NAME',     'db_sentimen')),
-    'port'    : int(os.environ.get('MYSQLPORT', os.environ.get('DB_PORT',     3306)))
+    'port' : int(os.environ.get('MYSQLPORT') or os.environ.get('DB_PORT') or 3306)
 }
 
 MODEL_DIR = 'model'
